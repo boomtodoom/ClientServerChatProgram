@@ -38,7 +38,6 @@ public class Server {
                     try {
                         System.out.println("Client connected");
                         PrintWriter pw =new PrintWriter(client.getOutputStream(),true);
-                        writers.add(pw);
                         BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                         String username;
                         while(true) {
@@ -49,14 +48,29 @@ public class Server {
                             } else {
                                 pw.println("Welcome to the chatroom "+username);
                                 names.add(username);
+                                writers.add(pw);
                                 break;
                             }
                         }
                         String message;
                         while ((message = in.readLine()) != null) {
                             System.out.println(message);
-                            for(int i=0;i<writers.size();i++){
-                                writers.get(i).println(username+" : "+message);
+                            if(message.startsWith("/w ")){
+                                String[] splitMsg = message.split("\s*\s");
+                                System.out.println(splitMsg[0]+" "+splitMsg[1]);
+                                if(names.contains(splitMsg[1])) {
+                                    int nameIndex = names.indexOf(splitMsg[1]);
+                                    String msgTrim = username+" ~ "+message.substring(message.indexOf(splitMsg[2]));
+                                    writers.get(nameIndex).println(msgTrim);
+                                    pw.println(msgTrim);
+                                } else {
+                                    System.out.println("Not an name");
+                                    pw.println("That is not a valid username");
+                                }
+                            } else {
+                                for (int i = 0; i < writers.size(); i++) {
+                                    writers.get(i).println(username + ": " + message);
+                                }
                             }
                         }
                     } catch (IOException e) {
